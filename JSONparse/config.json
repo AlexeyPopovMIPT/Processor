@@ -1,0 +1,551 @@
+{
+  "operations": [
+    {
+      "name": "hlt",
+      "code": 0,
+      "asmfragment": [ "cmdname=0;" ],
+      "procfragment": [ "iter = thou->codesize; break;" ],
+      "args": null
+    },
+    {
+      "name": "push",
+      "code": 1,
+      "asmfragment": [
+        "cmdname = ProcessComplexArg(&reader, &param0, &param1, &param1_writer, &param2_writer);",
+        "if (cmdname == -1 || cmdname == 0b000 || cmdname == 0b100) return ERR_NO_VALID_PUSH_ARG;"
+      ],
+      "procfragment": [
+        "GETPARAM(\"push\", double, thou, iter, val1);",
+        "ASSERTED(StackPush, \"push\", thou->stack, &val1);",
+        "break;"
+      ],
+      "args": [ "double" ]
+    },
+    {
+      "name": "push",
+      "code": 2,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"push(reg)\",short, thou, iter, param);",
+        "ASSERTED(StackPush, \"push(reg)\",  thou->stack, &thou->rax + param - 1);",
+        "break;"
+      ],
+      "args": [ "rshort" ]
+    },
+    {
+      "name": "push",
+      "code": 3,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"push(reg+num)\",  short, thou, iter, param);",
+        "GETPARAM(\"push(reg+num)\", double, thou, iter, val1 );",
+        "val1 += *(&thou->rax + param - 1);",
+        "ASSERTED(StackPush, \"push(reg+num)\", thou->stack, &val1);",
+        "break;"
+      ],
+      "args": [ "rshort", "double" ]
+    },
+    {
+      "name": "push",
+      "code": 5,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"push([num])\", double, thou, iter, val1);",
+        "ASSERTED(Round, \"push([num])\", val1, RAM_SIZE - 1, &lparam)",
+        "ASSERTED(StackPush, \"push([num])\", thou->stack, thou->RAM + lparam);",
+        "break;"
+      ],
+      "args": [ "RAM", "double" ]
+    },
+    {
+      "name": "push",
+      "code": 6,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"push([reg])\", short , thou, iter, param);",
+        "ASSERTED(Round, \"push([reg])\", *(&thou->rax + param - 1), RAM_SIZE - 1, &lparam);",
+        "ASSERTED(StackPush, \"push([reg])\", thou->stack, thou->RAM + lparam);",
+        "break;"
+      ],
+      "args": [ "RAM", "rshort" ]
+    },
+    {
+      "name": "push",
+      "code": 7,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"push([reg+num])\", short , thou, iter, param);",
+        "GETPARAM(\"push([reg+num])\", double, thou, iter, val1 );",
+        "ASSERTED(Round, \"push([reg+num])\", *(&thou->rax + param - 1), RAM_SIZE - 1, &lparam);",
+        "ASSERTED(Round, \"push([reg+num])\", val1, RAM_SIZE - 1 - lparam, &lparam);",
+        "ASSERTED(StackPush, \"push([reg+num])\", thou->stack, thou->RAM + lparam);",
+        "break;"
+      ],
+      "args": [ "RAM", "rshort", "double" ]
+    },
+    {
+      "name": "pop",
+      "code": 8,
+      "asmfragment": [
+        "cmdname = ProcessComplexArg(&reader, &param0, &param1, &param1_writer, &param2_writer);",
+        "if (cmdname == -1 || cmdname == 0b001 || cmdname == 0b100) return ERR_NO_VALID_POP_ARG;",
+        "cmdname |= 0b1000;"
+      ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"pop\", thou->stack, NULL);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "pop",
+      "code": 10,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"pop(reg)\", short, thou, iter, param);",
+        "ASSERTED(StackPop, \"pop(reg)\", thou->stack, &val1);",
+        "*(&thou->rax + param - 1) = val1;",
+        "break;"
+      ],
+      "args": [ "rshort" ]
+    },
+    {
+      "name": "pop",
+      "code": 11,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"pop(reg+num)\", short , thou, iter, param);",
+        "GETPARAM(\"pop(reg+num)\", double, thou, iter, val1 );",
+        "ASSERTED(StackPop, \"pop(reg+num)\", thou->stack, &val2);",
+        "*(&thou->rax + param - 1) = val1 + val2;",
+        "break;"
+      ],
+      "args": [ "rshort", "double" ]
+    },
+    {
+      "name": "pop",
+      "code": 13,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"pop([num])\", double, thou, iter, val1 );",
+        "ASSERTED(Round, \"pop([num])\", val1, RAM_SIZE - 1, &lparam);",
+        "ASSERTED(StackPop, \"pop([num])\", thou->stack, &val1);",
+        "(thou->RAM)[lparam] = val1;",
+        "break;"
+      ],
+      "args": [ "RAM", "double" ]
+    },
+    {
+      "name": "pop",
+      "code": 14,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"pop([reg])\", short , thou, iter, param);",
+        "ASSERTED(StackPop, \"pop([reg])\", thou->stack, &val1);",
+        "ASSERTED(Round, \"pop[reg]\",  *(&thou->rax + param - 1), RAM_SIZE - 1, &lparam);",
+        "(thou->RAM)[lparam] = val1;",
+        "break;"
+      ],
+      "args": [ "RAM", "rshort" ]
+    },
+    {
+      "name": "pop",
+      "code": 15,
+      "asmfragment": null,
+      "procfragment": [
+        "GETPARAM(\"pop([reg+num])\", short , thou, iter, param);",
+        "GETPARAM(\"pop([reg+num])\", double, thou, iter, val1 );",
+        "ASSERTED(StackPop, \"pop([reg+num])\", thou->stack, &val2);",
+        "ASSERTED(Round, \"pop[reg]\",  *(&thou->rax + param - 1), RAM_SIZE - 1, &lparam)",
+        "ASSERTED(Round, \"push([reg+num])\", val1, RAM_SIZE - 1 - lparam, &lparam);",
+        "(thou->RAM)[lparam] = val2;",
+        "break;"
+      ],
+      "args": [ "RAM", "rshort", "double" ]
+    },
+    {
+      "name": "peek",
+      "code": 4,
+      "asmfragment": [
+        "if (*reader != \'r\' || !IsReg(++reader)) {",
+        "    printf(\"ERROR: peek argument not found on line %d\\n\",line);",
+        "    return ERR_NO_VALID_PEEK_ARG;",
+        "}",
+        "",
+        "cmdname = 4;",
+        "param0 = *reader - \'a\' + 1;",
+        "param1_writer = (char*)(&param0);",
+        "",
+        "reader+=2;",
+        "SkipInteger(&reader);"
+      ],
+      "procfragment": [
+        "GETPARAM(\"peek\", short, thou, iter, param);",
+        "ASSERTED(StackPeek,\"peek\", thou->stack, &val1);",
+        "*(&thou->rax + param - 1) = val1;",
+        "break;"
+      ],
+      "args": [ "rshort" ]
+    },
+    {
+      "name": "add",
+      "code": 9,
+      "asmfragment": [ "cmdname=9;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"add\", thou->stack, &val2);",
+        "ASSERTED(StackPop,\"add\", thou->stack, &val1);",
+        "val1 += val2;",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "sub",
+      "code": 12,
+      "asmfragment": [ "cmdname=12;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"sub\", thou->stack, &val2);",
+        "ASSERTED(StackPop,\"sub\", thou->stack, &val1);",
+        "val1 -= val2;",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "mul",
+      "code": 16,
+      "asmfragment": [ "cmdname=16;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"mul\", thou->stack, &val2);",
+        "ASSERTED(StackPop,\"mul\", thou->stack, &val1);",
+        "val1 *= val2;",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "div",
+      "code": 17,
+      "asmfragment": [ "cmdname=17;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"div\", thou->stack, &val2);",
+        "ASSERTED(StackPop,\"div\", thou->stack, &val1);",
+        "ASSERTED(IsZero,\"div\", val2); ",
+        "val1 /= val2;",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "pow",
+      "code": 18,
+      "asmfragment": [ "cmdname=18;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"pow\", thou->stack, &val2);",
+        "ASSERTED(StackPop,\"pow\", thou->stack, &val1);",
+        "val1 = pow(val1, val2);",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "sqrt",
+      "code": 19,
+      "asmfragment": [ "cmdname=19;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"sqrt\", thou->stack, &val1);",
+        "val1 = sqrt(val1);",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "sin",
+      "code": 20,
+      "asmfragment": [ "cmdname=20;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"sin\", thou->stack, &val1);",
+        "val1 = sin(val1);",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "cos",
+      "code": 21,
+      "asmfragment": [ "cmdname=21;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"cos\", thou->stack, &val1);",
+        "val1 = cos(val1);",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "neg",
+      "code": 22,
+      "asmfragment": [ "cmdname=22;" ],
+      "procfragment": [
+        "ASSERTED(StackPop,\"neg\", thou->stack, &val1);",
+        "val1 = -val1;",
+        "StackPush(thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "in",
+      "code": 23,
+      "asmfragment": [ "cmdname=23;" ],
+      "procfragment": [
+        "if (scanf_s(\"%lf\", &val1) == 0) {",
+        "    printf(\"Error while processing in near 0x%X byte\\n\", iter);",
+        "    return iter; }",
+        "ASSERTED(StackPush, \"in\", thou->stack, &val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "out",
+      "code": 24,
+      "asmfragment": [ "cmdname=24;" ],
+      "procfragment": [
+        "ASSERTED(StackPop, \"out\", thou->stack, &val1);",
+        "printf(\"%lf\\n\", val1);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "dump",
+      "code": 25,
+      "asmfragment": [ "cmdname=25;" ],
+      "procfragment": [
+        "fStackDump(thou->stack, 0, stdout);",
+        "break;"
+      ],
+      "args": null
+    },
+    {
+      "name": "heck",
+      "code": 26,
+      "asmfragment": [
+        "cmdname = 26;",
+        "if (sscanf_s((const char*)reader, \"%hd\", &param0) == 0) {",
+        "    printf(\"ERROR: heck argument not found on line %d\\n\",line);",
+        "    return ERR_NO_VALID_HECK_ARG;",
+        "}",
+        "param1_writer = (char*)(&param0);",
+        "ToNextStr(&reader);"
+      ],
+      "procfragment": [
+        "GETPARAM(\"heck\", short, thou, iter, param);",
+        "break;"
+      ],
+      "args": [ "short" ]
+    },
+    {
+      "name": "jmp",
+      "code": 27,
+      "asmfragment": [
+        "cmdname=27;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "ja",
+      "code": 28,
+      "asmfragment": [
+        "cmdname=28;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 > val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "jae",
+      "code": 29,
+      "asmfragment": [
+        "cmdname=29;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 >= val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "jb",
+      "code": 30,
+      "asmfragment": [
+        "cmdname=30;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 < val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "jbe",
+      "code": 31,
+      "asmfragment": [
+        "cmdname=31;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 <= val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "je",
+      "code": 32,
+      "asmfragment": [
+        "cmdname=32;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 == val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "jne",
+      "code": 33,
+      "asmfragment": [
+        "cmdname=33;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"jmp\", long, thou, iter, lparam);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing jmp near 0x%X byte\\n\", iter); return iter; }",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val2);",
+        "ASSERTED(StackPop, \"ja\", thou->stack, &val1);",
+        "if (val1 != val2) iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "call",
+      "code": 34,
+      "asmfragment": [
+        "cmdname=34;",
+        "if (ProcessLabelLinkArg(&reader, &param1_writer, &param2))",
+        "    {",
+        "        printf(\"ERROR: jump argument not found on line %d\\n\",line);",
+        "        return ERR_NO_VALID_JUMP_ARG;",
+        "    }"
+      ],
+      "procfragment": [
+        "GETPARAM(\"call\", long, thou, iter, lparam);",
+        "StackPush(callstk, &iter);",
+        "if (lparam < 0 || lparam > thou->codesize) {",
+        "    printf(\"Error while processing call near 0x%X byte\\n\", iter); return iter; }",
+        "iter = lparam;",
+        "break;"
+      ],
+      "args": [ "long" ],
+      "scltoken": true
+    },
+    {
+      "name": "ret",
+      "code": 35,
+      "asmfragment": [ "cmdname=35;" ],
+      "procfragment": [
+        "ASSERTED(StackPop, \"ret\", callstk, &lparam);",
+        "iter = lparam;",
+        "break;"
+      ],
+      "args": null
+    }
+
+  ]
+
+}
